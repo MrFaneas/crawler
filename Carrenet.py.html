@@ -1,0 +1,65 @@
+<html>
+<head>
+<title>Carrenet.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Carrenet.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">scrapy</span>
+
+
+<span class="s0">class </span><span class="s1">CarrernetSpider(scrapy.Spider):</span>
+    <span class="s1">name = </span><span class="s2">'project'</span>
+
+    <span class="s1">allowed_domains = [</span><span class="s2">'carrernet.gr/'</span><span class="s1">]</span>
+    <span class="s1">start_urls = [</span><span class="s2">'https://www.careernet.gr/aggelies?page='</span><span class="s1">]</span>
+    <span class="s1">base_url =[</span><span class="s2">'careernet.gr/aggelia/'</span><span class="s1">]</span>
+
+    <span class="s0">def </span><span class="s1">parse(self</span><span class="s0">, </span><span class="s1">response):</span>
+
+        <span class="s1">all_the_jobs = response.xpath(</span><span class="s2">'//article'</span><span class="s1">)</span>
+
+
+
+        <span class="s0">for </span><span class="s1">job </span><span class="s0">in </span><span class="s1">all_the_jobs:</span>
+            <span class="s1">job_url = job.xpath(</span><span class="s2">'.//header/a/@href'</span><span class="s1">).extract_first()</span>
+            <span class="s0">yield </span><span class="s1">{</span><span class="s2">'job_url'</span><span class="s1">:job_url}</span>
+
+
+
+            <span class="s0">if </span><span class="s2">'aggelia/' </span><span class="s0">not in </span><span class="s1">job_url:</span>
+                <span class="s1">job_url = </span><span class="s2">'aggelia/' </span><span class="s1">+ job_url</span>
+            <span class="s1">job_url = self.base_url + job_url</span>
+            <span class="s0">yield </span><span class="s1">scrapy.Request(job_url</span><span class="s0">, </span><span class="s1">callback=self.parse_job)</span>
+
+            <span class="s1">next_page_url =response.xpath(</span><span class="s2">'//div[@class=&quot;text-center&quot;]/ul[@class=&quot;pagination pagination-md&quot;]/li[@class=&quot;active&quot;]/a[@class=&quot;no-smoothState&quot;]/@href'</span><span class="s1">).extract_first()</span>
+            <span class="s1">next_page_url = self.base_url + next_page_url</span>
+
+            <span class="s1">print(next_page_url)</span>
+            <span class="s0">yield </span><span class="s1">scrapy.Request(next_page_url</span><span class="s0">, </span><span class="s1">callback=self.parse)</span>
+
+
+
+    <span class="s0">def </span><span class="s1">parse_job(self</span><span class="s0">, </span><span class="s1">response):</span>
+        <span class="s1">title_job = response.xpath(</span><span class="s2">'//article/header/h1'</span><span class="s1">).extract_first()</span>
+        <span class="s1">job_info = response.xpath(</span><span class="s2">'//section[@class=&quot;col-xs-12 col-sm-10 col-sm-offset-1 col-lg-9 col-lg-offset-1 text-wrap&quot;]/p'</span><span class="s1">).extract_first()</span>
+
+        <span class="s0">yield </span><span class="s1">{</span>
+            <span class="s2">'title_job'</span><span class="s1">: title_job</span><span class="s0">,</span>
+            <span class="s2">'job_info'</span><span class="s1">: job_info</span>
+        <span class="s1">}</span>
+
+
+
+</pre>
+</body>
+</html>
